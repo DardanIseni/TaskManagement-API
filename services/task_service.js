@@ -21,7 +21,7 @@ const getTaskById = async (req, res) => {
 }
 
 const addTask = async (req, res) => {
-    req.body.UserId = req.user.id ;
+    req.body.UserId = req.user.user_id ;
     const task = await Task.create(req.body);
     res.json(task);
 }

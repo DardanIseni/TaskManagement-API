@@ -37,33 +37,28 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    try {
-        // Get user input
-        const { username, password } = req.body;
+    const { username, password } = req.body;
 
-        // Validate user input
-        if (!(username && password)) {
-            res.status(400).send("All input is required");
-        }
-        // Validate if user exist in our database
-        const user = await User.findOne({ username });
-
-        if (user && (await bcrypt.compare(password, user.password))) {
-            const token = jwt.sign(
-                {user_id: user.id, username},
-                'SECRET_KEY',
-                {
-                    expiresIn: "2h",
-                }
-            );
-
-            res.status(200).json({user,token:token});
-        }
-        res.status(400).send("Invalid Credentials");
-    } catch (err) {
-        console.log(err);
+    if (!(username && password)) {
+        return res.status(400).send("All input is required");
     }
+
+    const user = await User.findOne({ where: { 'username': username}, include: 'created_tasks' });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+        const token = jwt.sign(
+            {user_id: user.id, username},
+            'SECRET_KEY',
+            {
+                expiresIn: "2h",
+            }
+        );
+
+        return res.status(200).json({user,token:token});
+    }
+    return res.status(400).send("Invalid Credentials");
 }
+
 
 module.exports = {
     register,

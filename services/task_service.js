@@ -1,13 +1,16 @@
-const Task  = require('../models/task_model');
+const {Task , UserTask}  = require('../models/task_model');
+const User = require('../models/user_model');
+
+
 
 const getAllTasks= async (req, res) => {
-    res.json(await Task.findAll());
+    res.json(await Task.findAll({include: 'creator'}));
 }
 
 const getTaskById = async (req, res) => {
 
     try {
-        const task = await Task.findByPk(req.params.id);
+        const task = await Task.findByPk(req.params.id,{include: 'creator'});
         if (task) {
             res.json(task);
         }
@@ -44,11 +47,45 @@ const deleteTask = async (req, res) => {
     }
 }
 
+const markTaskAsCompleted = async (req, res) => {
+    try {
+        const task = await Task.findByPk(req.params.id);
+        const user = await User.findByPk(req.user.user_id);
+        if (task) {
+            task.status = true;
+            await task.save();
+            const data = await UserTask.create({ UserId: user.id, TaskId: task.id });
+            res.json(data);
+        }
+        else {
+            res.status(404).json("Task not found");
+        }
+    }
+    catch (err) {
+        res.status(404).json("Task not found");
+    }
+}
+
+const getCompletedTasks = async (req, res) => {
+    //TODO: get all completed tasks for the user
+
+    const doneTasks = await User.findOne({ where: { id: req.user.user_id }, include: {
+        model: Task,
+        as: 'completed_tasks',
+            through: {
+                attributes: []
+            }
+        } });
+    res.json(doneTasks);
+}
+
 
 module.exports = {
     getAllTasks,
     getTaskById,
     updateTask,
     deleteTask,
-    addTask
+    addTask,
+    markTaskAsCompleted,
+    getCompletedTasks
 }

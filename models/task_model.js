@@ -24,12 +24,36 @@ const Task = sequelize.define('Task', {
 // Other model options go here
 });
 
+const UserTask = sequelize.define('UserTask', {
+    TaskId: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: Task,
+            key: 'id'
+        }
+    },
+    UserId: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    }
+});
+
 Task.belongsTo(User,{
     foreignKey: "UserId",
-    as: "User",
+    as: "creator",
 });
-User.hasMany(Task);
+User.hasMany(Task, {
+    as : 'created_tasks'
+});
+
+Task.belongsToMany(User, {as:'completed_from', through: 'UserTask'});
+User.belongsToMany(Task, {as:'completed_tasks', through: 'UserTask' });
 
 
+Task.sync({ alter: true });
 
-module.exports = Task;
+
+module.exports = {Task, UserTask};

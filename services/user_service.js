@@ -59,8 +59,17 @@ const login = async (req, res) => {
     return res.status(400).send("Invalid Credentials");
 }
 
+const logout = async (req, res) => {
+    //TODO: Implement logout
+
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    jwt.sign(token, "SECRET_KEY", { expiresIn: 1 } , (logout, err) => {
+    });
+}
 
 module.exports = {
     register,
-    login
+    login,
+    logout
 }

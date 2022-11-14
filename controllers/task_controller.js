@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const task_service = require('../services/task_service');
 const authenticateToken = require('../middleware/auth');
-const UserService = require("../services/user_service");
 
 router.get('/', task_service.getAllTasks);
 

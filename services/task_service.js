@@ -4,13 +4,20 @@ const User = require('../models/user_model');
 
 
 const getAllTasks= async (req, res) => {
-    res.json(await Task.findAll({include: 'creator'}));
+    res.json(await Task.findAll( { include: {
+            model: User,
+            as : 'creator',
+            attributes: { exclude: ['createdAt', 'updatedAt', 'password'] }
+        },attributes: { exclude: ['UserId'] }}));
 }
 
 const getTaskById = async (req, res) => {
-
     try {
-        const task = await Task.findByPk(req.params.id,{include: 'creator'});
+        const task = await Task.findByPk(req.params.id, { include: {
+            model: User,
+            as : 'creator',
+            attributes: { exclude: ['createdAt', 'updatedAt', 'password'] }
+            },attributes: { exclude: ['UserId'] }});
         if (task) {
             res.json(task);
         }
@@ -50,12 +57,12 @@ const deleteTask = async (req, res) => {
 const markTaskAsCompleted = async (req, res) => {
     try {
         const task = await Task.findByPk(req.params.id);
-        const user = await User.findByPk(req.user.user_id);
+        const user = await User.findByPk(req.user.user_id ,{include: 'completed_tasks'});
         if (task) {
             task.status = true;
             await task.save();
-            const data = await UserTask.create({ UserId: user.id, TaskId: task.id });
-            res.json(data);
+            await UserTask.create({ UserId: user.id, TaskId: task.id },);
+            res.json(task);
         }
         else {
             res.status(404).json("Task not found");
@@ -67,15 +74,15 @@ const markTaskAsCompleted = async (req, res) => {
 }
 
 const getCompletedTasks = async (req, res) => {
-    //TODO: get all completed tasks for the user
-
     const doneTasks = await User.findOne({ where: { id: req.user.user_id }, include: {
         model: Task,
         as: 'completed_tasks',
             through: {
                 attributes: []
             }
-        } });
+        },
+        attributes: { exclude: ['createdAt', 'updatedAt', 'password'] }
+    });
     res.json(doneTasks);
 }
 

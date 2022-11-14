@@ -53,7 +53,4 @@ Task.belongsToMany(User, {as:'completed_from', through: 'UserTask'});
 User.belongsToMany(Task, {as:'completed_tasks', through: 'UserTask' });
 
 
-Task.sync({ alter: true });
-
-
 module.exports = {Task, UserTask};
